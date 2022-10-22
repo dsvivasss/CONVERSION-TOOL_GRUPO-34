@@ -8,6 +8,7 @@ import datetime
 from ..decorators import token_required
 
 file_schema = FileSchema()
+user_schema = UserSchema()
 
 class TasksView(Resource):
     
@@ -22,32 +23,6 @@ class TasksView(Resource):
         files = File.query.filter_by(user=userId, status='processed').all()
         
         return file_schema.dump(files, many=True), 200
-    
-    def post(self):
-        username = request.json.get('username', None)
-        
-        # check if username exists in database
-        user = User.query.filter_by(username=username).first()
-        
-        if user is None:
-            return 'User not found', 401
-        
-        if user.password != request.json.get('password', None):
-            return 'Invalid password', 401
-        
-        timestamp = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=30)
-        base_token = {
-            'iat': timestamp,
-            'exp': timestamp + datetime.timedelta(seconds=30),
-            'sub': username,
-            'iss': 'www.test.com',
-            # 'permissions': device_found['permissions']
-        }
-        encoded_jwt = jwt.encode(base_token, "secret", algorithm="HS256")
-        response = {'token': encoded_jwt}
-        return response, 200
-    
-user_schema = UserSchema()
 
 class LoginView(Resource):
     

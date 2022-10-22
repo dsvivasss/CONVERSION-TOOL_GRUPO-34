@@ -39,33 +39,3 @@ jwt = JWTManager(app)
 #Prueba
 with app.app_context():
     pass
-    
-    u = User(username='Juan', password='12345', email='juan@gmail.com')
-    
-    db.session.add(u)
-    db.session.commit()
-    
-    file1 = File(fileName='file1', fileFormat='pdf', status='pending', path='C:/Users/Juan/Desktop/file1.pdf', user = u.id)
-    file2 = File(fileName='file2', fileFormat='pdf', status='pending', path='C:/Users/Juan/Desktop/file2.pdf', user = u.id)
-    
-    db.session.add_all([file1, file2])
-    db.session.commit()
-    
-class VistaPuntaje(Resource):
-
-    def post(self):
-        
-        return {'puntaje': 5}
-        
-        # content = requests.get(f'http://127.0.0.1:5000/cancion/{id_cancion}')
-        
-        # if content.status_code == 404:
-        #     return content.json(), 404
-        # else:
-        #     cancion = content.json()
-        #     cancion['puntaje'] = request.json['puntaje']
-        #     args = (cancion,)
-        #     registrar_puntaje.apply_async(args=args)
-        #     return json.dumps(cancion)
-        
-api.add_resource(VistaPuntaje, '/cancion/')
