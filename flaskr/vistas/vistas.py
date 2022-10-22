@@ -4,8 +4,10 @@ import jwt
 from ..models import db, File, FileSchema, User, UserSchema
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token
+from werkzeug.utils import secure_filename
 import datetime
 from ..decorators import token_required
+import os
 
 file_schema = FileSchema()
 user_schema = UserSchema()
@@ -20,9 +22,15 @@ class TasksView(Resource):
         username = decoded_token['sub']
         
         userId = User.query.filter_by(username=username).first().id
-        files = File.query.filter_by(user=userId, status='processed').all()
+        files = File.query.filter_by(user=userId).all()
         
         return file_schema.dump(files, many=True), 200
+    
+    @token_required
+    def post(self):
+        f = request.files['fileName']
+        f.save(os.path.join('./uploads', secure_filename(f.filename)))
+        return 'file uploaded successfully'
 
 class LoginView(Resource):
     
