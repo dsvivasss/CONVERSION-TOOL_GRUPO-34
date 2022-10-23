@@ -14,6 +14,7 @@ import json
 
 file_schema = FileSchema()
 user_schema = UserSchema()
+valid_token_seconds = 3600
 
 # Allowed audio formats
 ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma', 'pdf'}
@@ -21,11 +22,9 @@ ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'w
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
 
-# producer = KafkaProducer(
-#     bootstrap_servers=['localhost:9092'],
-#     value_serializer=json_serializer,
-#     # partitioner=get_partition
-#     )
+producer = KafkaProducer(
+    bootstrap_servers=['localhost:9092'],
+    value_serializer=json_serializer)
 
 class TasksView(Resource):
     
@@ -71,7 +70,7 @@ class TasksView(Resource):
         session.add(file)
         session.commit()
         
-        # producer.send('conversion', value={'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat})
+        producer.send('convert_song', value={'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat, 'username': username, 'id': file.id})
         
         return {'message': 'file uploaded successfully'}
     
@@ -110,7 +109,7 @@ class UniqueTaskView(Resource):
         return {}, 204
     
 class ModifyFileView(Resource):
-    @token_required
+    
     def put(self, id):
         file = session.query(File).get(id)
         if file is None:
@@ -149,10 +148,10 @@ class LoginView(Resource):
         if user.password != request.json.get('password', None):
             return {'message': 'Invalid password'}, 401
         
-        timestamp = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=30)
+        timestamp = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=valid_token_seconds)
         base_token = {
             'iat': timestamp,
-            'exp': timestamp + datetime.timedelta(seconds=30),
+            'exp': timestamp + datetime.timedelta(seconds=valid_token_seconds),
             'sub': username,
             'iss': 'www.test.com',
             # 'permissions': device_found['permissions']
