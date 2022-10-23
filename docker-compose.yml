@@ -1,5 +1,19 @@
 version: '2'
 services:
+  api:
+    build: ./api
+    ports:
+      - 5001:5001
+    stdin_open: true # Allows us to run the container in interactive mode
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 50M
+        reservations:
+          cpus: '0.25'
+          memory: 20M
+
   zookeeper:
     image: confluentinc/cp-zookeeper:6.0.1
     hostname: zookeeper

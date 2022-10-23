@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 from mimetypes import init
 from api import create_app
 <<<<<<< HEAD
 from .models import create_all
 =======
+=======
+from . import create_app
+>>>>>>> origin/TasksMateo
 from .models import db, File, User
 >>>>>>> origin/convert_setup
 from flask_restful import Api, Resource
