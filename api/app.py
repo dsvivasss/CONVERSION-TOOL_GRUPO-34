@@ -16,12 +16,12 @@ create_all()
 cors = CORS(app)
 api = Api(app)
 
-api.add_resource(LoginView, '/api/auth/login/')
-api.add_resource(SignUpView, '/api/auth/signup/')
-api.add_resource(TasksView, '/api/tasks/')
-api.add_resource(UniqueTaskView, '/api/tasks/<int:id>/')
-api.add_resource(FilesView, '/api/files/<string:filename>/')
-api.add_resource(ModifyFileView, '/api/file/<string:id>/')
+api.add_resource(LoginView, '/api/auth/login')
+api.add_resource(SignUpView, '/api/auth/signup')
+api.add_resource(TasksView, '/api/tasks')
+api.add_resource(UniqueTaskView, '/api/tasks/<int:id>')
+api.add_resource(FilesView, '/api/files/<string:filename>')
+api.add_resource(ModifyFileView, '/api/file/<string:id>')
 jwt = JWTManager(app)
 
 #Prueba
