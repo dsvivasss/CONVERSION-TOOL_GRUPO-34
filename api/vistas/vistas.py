@@ -51,7 +51,7 @@ class TasksView(Resource):
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
         
-        UPLOAD_FOLDER = f'./uploads/{username}'
+        UPLOAD_FOLDER = f'../uploads'
         
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)
@@ -119,12 +119,9 @@ class ModifyFileView(Resource):
 class FilesView(Resource):
     
     @token_required
-    def get(self, filename):      
-        token = request.headers.get('Authorization').split(' ')[1]
-        decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
-        username = decoded_token['sub']
+    def get(self, filename):
         
-        UPLOAD_FOLDER = f'./uploads/{username}'
+        UPLOAD_FOLDER = f'../uploads'
         
         filenameEncoded = urllib.parse.quote(filename.encode('utf8'))
         

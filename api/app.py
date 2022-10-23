@@ -1,4 +1,4 @@
-from flaskr import create_app
+from api import create_app
 from .models import db, File, User
 # from authorization.models import User
 # from .models import AlbumSchema, CancionSchema, UsuarioSchema
