@@ -15,14 +15,17 @@ import json
 file_schema = FileSchema()
 user_schema = UserSchema()
 
+# Allowed audio formats
+ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma'}
+
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
 
-producer = KafkaProducer(
-    bootstrap_servers=['localhost:9092'],
-    value_serializer=json_serializer,
-    # partitioner=get_partition
-    )
+# producer = KafkaProducer(
+#     bootstrap_servers=['localhost:9092'],
+#     value_serializer=json_serializer,
+#     # partitioner=get_partition
+#     )
 
 class TasksView(Resource):
     
@@ -47,6 +50,9 @@ class TasksView(Resource):
         f = request.files['fileName']
         newFormat = request.form['newFormat']
         
+        if f.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
+            return {'message': 'File format not allowed, allowed formats: MP3, ACC, OGG, WAV, WMA'}, 400
+        
         token = request.headers.get('Authorization').split(' ')[1]
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
@@ -63,7 +69,7 @@ class TasksView(Resource):
         db.session.add(file)
         db.session.commit()
         
-        producer.send('conversion', value={'fileName': f.filename, 'newFormat': newFormat, 'username': username})
+        # producer.send('conversion', value={'fileName': f.filename, 'newFormat': newFormat, 'username': username})
         
         return {'message': 'file uploaded successfully'}
     
