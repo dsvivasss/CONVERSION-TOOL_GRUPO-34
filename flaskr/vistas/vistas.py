@@ -1,5 +1,5 @@
 
-from flask import request
+from flask import request, send_file
 import jwt
 from ..models import db, File, FileSchema, User, UserSchema
 from flask_restful import Resource
@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 import datetime
 from ..decorators import token_required
 import os
+import urllib.parse
 
 file_schema = FileSchema()
 user_schema = UserSchema()
@@ -29,8 +30,73 @@ class TasksView(Resource):
     @token_required
     def post(self):
         f = request.files['fileName']
-        f.save(os.path.join('./uploads', secure_filename(f.filename)))
-        return 'file uploaded successfully'
+        newFormat = request.form['newFormat']
+        
+        token = request.headers.get('Authorization').split(' ')[1]
+        decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
+        username = decoded_token['sub']
+        
+        UPLOAD_FOLDER = f'./uploads/{username}'
+        
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        
+        f.save(os.path.join(UPLOAD_FOLDER, secure_filename(f.filename)))
+        
+        user = User.query.filter_by(username=username).first()
+        file = File(fileName=f.filename, newFormat=newFormat, user=user.id)
+        db.session.add(file)
+        db.session.commit()
+        
+        return {'message': 'file uploaded successfully'}
+    
+class UniqueTaskView(Resource):
+    
+    @token_required
+    def get(self, id):
+        file = File.query.get(id)
+        if file is None:
+            return {'message': 'File not found'}, 404
+        
+        return file_schema.dump(file), 200
+    
+    @token_required
+    def put(self, id):
+        file = File.query.get(id)
+        if file is None:
+            return {'message': 'File not found'}, 404
+        
+        file.status = 'uploaded'
+        file.newFormat = request.json.get('newFormat', None)
+        
+        db.session.commit()
+        
+        return file_schema.dump(file), 200
+    
+    @token_required
+    def delete(self, id):
+        file = File.query.get(id)
+        if file is None:
+            return {'message': 'File not found'}, 404
+        
+        db.session.delete(file)
+        db.session.commit()
+        
+        return {}, 204
+    
+class FilesView(Resource):
+    
+    @token_required
+    def get(self, filename):      
+        token = request.headers.get('Authorization').split(' ')[1]
+        decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
+        username = decoded_token['sub']
+        
+        UPLOAD_FOLDER = f'./uploads/{username}'
+        
+        filenameEncoded = urllib.parse.quote(filename.encode('utf8'))
+        
+        return send_file(os.path.join(UPLOAD_FOLDER, filenameEncoded)) #, as_attachment=True
 
 class LoginView(Resource):
     
@@ -41,10 +107,10 @@ class LoginView(Resource):
         user = User.query.filter_by(username=username).first()
         
         if user is None:
-            return 'User not found', 401
+            return {'message': 'User not found'}, 401
         
         if user.password != request.json.get('password', None):
-            return 'Invalid password', 401
+            return {'message': 'Invalid password'}, 401
         
         timestamp = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=30)
         base_token = {

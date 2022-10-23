@@ -22,15 +22,14 @@ class UserSchema(SQLAlchemyAutoSchema):
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fileName = db.Column(db.String(128))
-    fileFormat = db.Column(db.String(128))
+    newFormat = db.Column(db.String(128))
     timeStamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     status = db.Column(db.String(128), default='uploaded')
-    path = db.Column(db.String(128))
     
     user = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     def __repr__(self):
-        return f"{self.fileName} - {self.fileFormat} - {self.timeStamp} - {self.status} - {self.path}"
+        return f"{self.fileName} - {self.newFormat} - {self.timeStamp} - {self.status}"
     
 class FileSchema(SQLAlchemyAutoSchema):
     class Meta:
