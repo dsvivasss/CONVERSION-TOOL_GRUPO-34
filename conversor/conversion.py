@@ -6,12 +6,12 @@ import requests
 
 host = 'http://localhost:5000'
 
-consumer = KafkaConsumer('convert_song', bootstrap_servers='localhost:9092')
+consumer = KafkaConsumer('convert_song', bootstrap_servers='localhost:9092', fetch_max_wait_ms = 10000)
 print('Kafka Consumer has been initiated...')
 
 if __name__ == '__main__':
-
     for msg in consumer:
+        print('Start ...')
         file_data = json.loads(msg.value)
         name = file_data.get('fileName').split('.')
         newName= name[0] + '.'+ file_data.get('newFormat')
