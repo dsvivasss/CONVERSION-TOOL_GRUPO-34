@@ -16,7 +16,7 @@ file_schema = FileSchema()
 user_schema = UserSchema()
 
 # Allowed audio formats
-ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma'}
+ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma', 'pdf'}
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -50,7 +50,9 @@ class TasksView(Resource):
         f = request.files['fileName']
         newFormat = request.form['newFormat']
         
-        if f.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
+        oldFormat = f.filename.rsplit('.', 1)[1].lower()
+        
+        if oldFormat not in ALLOWED_EXTENSIONS:
             return {'message': 'File format not allowed, allowed formats: MP3, ACC, OGG, WAV, WMA'}, 400
         
         token = request.headers.get('Authorization').split(' ')[1]
@@ -65,11 +67,11 @@ class TasksView(Resource):
         f.save(os.path.join(UPLOAD_FOLDER, secure_filename(f.filename)))
         
         user = User.query.filter_by(username=username).first()
-        file = File(fileName=f.filename, newFormat=newFormat, user=user.id)
+        file = File(fileName=f.filename, newFormat=newFormat, oldFormat=oldFormat, user=user.id)
         db.session.add(file)
         db.session.commit()
         
-        # producer.send('conversion', value={'fileName': f.filename, 'newFormat': newFormat, 'username': username})
+        # producer.send('conversion', value={'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat})
         
         return {'message': 'file uploaded successfully'}
     

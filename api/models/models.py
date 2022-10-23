@@ -23,7 +23,7 @@ class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fileName = db.Column(db.String(128))
     newFormat = db.Column(db.String(128))
-    # oldFormat = db.Column(db.String(128))
+    oldFormat = db.Column(db.String(128))
     timeStamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     status = db.Column(db.String(128), default='uploaded')
     
