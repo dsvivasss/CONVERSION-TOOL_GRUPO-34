@@ -1,5 +1,6 @@
+from mimetypes import init
 from api import create_app
-from .models import db, File, User
+from .models import create_all
 from flask_restful import Api, Resource
 from .vistas import LoginView, SignUpView, TasksView, UniqueTaskView, FilesView, ModifyFileView
 from flask_jwt_extended import JWTManager
@@ -8,15 +9,11 @@ from flask_cors import CORS
 app = create_app('default')
 
 # Context is a dictionary that is used to store application-specific data.
-
 app_context = app.app_context()
 app_context.push()
 
-db.init_app(app)
-db.create_all()
-
+create_all()
 cors = CORS(app)
-
 api = Api(app)
 
 api.add_resource(LoginView, '/api/auth/login')
@@ -31,4 +28,3 @@ jwt = JWTManager(app)
 with app.app_context():
     # consumer.run()
     pass
-

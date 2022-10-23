@@ -2,7 +2,7 @@
 from flask import request, send_file
 from kafka import KafkaProducer, KafkaConsumer
 import jwt
-from ..models import db, File, FileSchema, User, UserSchema
+from ..models import File, FileSchema, User, UserSchema, session
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, create_access_token
 from werkzeug.utils import secure_filename
@@ -33,11 +33,11 @@ class TasksView(Resource):
         username = decoded_token['sub']
         
         if username == 'conversion':
-            files = File.query.all()
+            files = session.query(File).all()
             return file_schema.dump(files, many=True)
         
-        userId = User.query.filter_by(username=username).first().id
-        files = File.query.filter_by(user=userId).all()
+        userId = session.query(User).filter_by(username=username).first().id
+        files = session.query(File).filter_by(user=userId).all()
         
         return file_schema.dump(files, many=True), 200
     
@@ -57,10 +57,10 @@ class TasksView(Resource):
         
         f.save(os.path.join(UPLOAD_FOLDER, secure_filename(f.filename)))
         
-        user = User.query.filter_by(username=username).first()
+        user = session.query(User).filter_by(username=username).first()
         file = File(fileName=f.filename, newFormat=newFormat, user=user.id)
-        db.session.add(file)
-        db.session.commit()
+        session.add(file)
+        session.commit()
         
         producer.send('convert_song', value={'fileName': f.filename, 'newFormat': newFormat, 'username': username, 'id': file.id})
         
@@ -70,7 +70,7 @@ class UniqueTaskView(Resource):
     
     @token_required
     def get(self, id):
-        file = File.query.get(id)
+        file = session.query(File).get(id)
         if file is None:
             return {'message': 'File not found'}, 404
         
@@ -78,38 +78,38 @@ class UniqueTaskView(Resource):
     
     @token_required
     def put(self, id):
-        file = File.query.get(id)
+        file = session.query(File).get(id)
         if file is None:
             return {'message': 'File not found'}, 404
         
         file.status = 'uploaded'
         file.newFormat = request.json.get('newFormat', None)
         
-        db.session.commit()
+        session.commit()
         
         return file_schema.dump(file), 200
     
     @token_required
     def delete(self, id):
-        file = File.query.get(id)
+        file = session.query(File).get(id)
         if file is None:
             return {'message': 'File not found'}, 404
         
-        db.session.delete(file)
-        db.session.commit()
+        session.delete(file)
+        session.commit()
         
         return {}, 204
     
 class ModifyFileView(Resource):
     
     def put(self, id):
-        file = File.query.get(id)
+        file = session.query(File).get(id)
         if file is None:
             return {'message': 'File not found'}, 404
         
         file.status = 'processed'
         
-        db.session.commit()
+        session.commit()
         
         # SEND EMAIL TO USER
         
@@ -132,7 +132,7 @@ class LoginView(Resource):
         username = request.json.get('username', None)
         
         # check if username exists in database
-        user = User.query.filter_by(username=username).first()
+        user = session.query(User).filter_by(username=username).first()
         
         if user is None:
             return {'message': 'User not found'}, 401
@@ -161,8 +161,8 @@ class SignUpView(Resource):
         email = request.json.get('email', None)
         
         # check if username exists in database
-        userByUsername = User.query.filter_by(username=username).first()
-        userByEmail = User.query.filter_by(email=email).first()
+        userByUsername = session.query(User).filter_by(username=username).first()
+        userByEmail = session.query(User).filter_by(email=email).first()
         
         if userByUsername is not None:
             return {'message': 'Username already exists'}, 401
@@ -174,7 +174,7 @@ class SignUpView(Resource):
             return {'message': 'Passwords do not match'}, 401
         
         new_user = User(username=username, password=password1, email=email)
-        db.session.add(new_user)
-        db.session.commit()
+        session.add(new_user)
+        session.commit()
         
         return {'message': 'User created'}, 200
