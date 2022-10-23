@@ -21,6 +21,7 @@ def json_serializer(data):
 
 producer = KafkaProducer(
     bootstrap_servers=['localhost:9092'],
+    api_version=(0,11,5),
     value_serializer=json_serializer)
 
 class TasksView(Resource):
@@ -92,6 +93,10 @@ class UniqueTaskView(Resource):
     @token_required
     def delete(self, id):
         file = session.query(File).get(id)
+
+        if file.status == "uploaded":
+            return {'message': 'File can not be deleted'}, 404
+
         if file is None:
             return {'message': 'File not found'}, 404
         
