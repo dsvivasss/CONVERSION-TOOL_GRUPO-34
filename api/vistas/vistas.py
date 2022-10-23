@@ -120,16 +120,34 @@ class ModifyFileView(Resource):
         
         return {'message': 'success'}, 200
         
-class FilesView(Resource):
+class FilesViewUpload(Resource):
     
     @token_required
-    def get(self, filename):
+    def get(self, id):
+        file = session.query(File).get(id)
+        if file is None:
+            return {'message': 'File not found'}, 404
         
         UPLOAD_FOLDER = f'../uploads'
         
-        filenameEncoded = urllib.parse.quote(filename.encode('utf8'))
+        filenameEncoded = urllib.parse.quote(file.fileName.encode('utf8'))
         
         return send_file(os.path.join(UPLOAD_FOLDER, filenameEncoded)) #, as_attachment=True
+class FilesViewConvert(Resource):
+    
+    @token_required
+    def get(self, id):
+        file = session.query(File).get(id)
+        if file is None:
+            return {'message': 'File not found'}, 404
+        PROCESS_FOLDER = f'../process'
+
+        name = file.fileName.split('.')
+        newName= name[0] + '.'+ file.newFormat
+        
+        filenameEncoded = urllib.parse.quote(newName.encode('utf8'))
+        
+        return send_file(os.path.join(PROCESS_FOLDER, filenameEncoded)) #, as_attachment=True
 
 class LoginView(Resource):
     
