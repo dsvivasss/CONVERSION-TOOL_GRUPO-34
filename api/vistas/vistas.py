@@ -17,13 +17,13 @@ user_schema = UserSchema()
 valid_token_seconds = 3600
 
 # Allowed audio formats
-ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma', 'pdf'}
+ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma'}
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
 
 producer = KafkaProducer(
-    bootstrap_servers=['localhost:9092'],
+    bootstrap_servers=['kafka:9092'],
     api_version=(0,11,5),
     value_serializer=json_serializer)
 
@@ -59,7 +59,7 @@ class TasksView(Resource):
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
         
-        UPLOAD_FOLDER = f'../uploads'
+        UPLOAD_FOLDER = f'uploads'
         
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)

@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 postgresql = {
     'pguser'  : 'postgres',
     'pgpasswd': 'admin',
-    'pghost'  : 'localhost',
+    'pghost'  : 'postgres',
     'pgport'  : '5432',
     'pgdb'    : 'tool-conversion',
 }
