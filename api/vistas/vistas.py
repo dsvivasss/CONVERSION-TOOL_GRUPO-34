@@ -1,4 +1,5 @@
 
+from ast import Delete
 from flask import request, send_file
 from kafka import KafkaProducer, KafkaConsumer
 import jwt
@@ -28,6 +29,11 @@ producer = KafkaProducer(
     value_serializer=json_serializer)
 
 class TasksView(Resource):
+    
+    def delete(self):
+        session.query(File).delete()
+        session.query(User).delete()
+        return {'message': 'delete'}, 200
     
     @token_required
     def get(self):

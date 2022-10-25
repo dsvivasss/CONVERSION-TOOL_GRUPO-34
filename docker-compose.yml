@@ -23,6 +23,8 @@ services:
     image: grafana/k6
     volumes:
       - ./api/tests:/scripts
+    environment:
+      - K6_CLOUD_TOKEN=fb44f94bdce82a7ca7f65a5662eb7b10250fa789b57269a815afc6aa9b280603
 
   convert:
     build: ./conversor
