@@ -6,7 +6,10 @@ import requests
 
 host = 'http://api:5001'
 
-consumer = KafkaConsumer('convert_song', bootstrap_servers='kafka:9092', fetch_max_wait_ms = 10000)
+print('iniciando')
+consumer = KafkaConsumer('convert_song', 
+                         api_version=(0,11,5),
+                         bootstrap_servers='kafka:29092', fetch_max_wait_ms = 10000)
 print('Kafka Consumer has been initiated...')
 
 if __name__ == '__main__':

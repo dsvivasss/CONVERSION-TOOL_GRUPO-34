@@ -19,6 +19,11 @@ services:
       - kafka
       - postgres
 
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./api/tests:/scripts
+
   convert:
     build: ./conversor
     volumes:
