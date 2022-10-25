@@ -1,4 +1,5 @@
 
+from ast import Delete
 from flask import request, send_file
 from kafka import KafkaProducer, KafkaConsumer
 import jwt
@@ -16,15 +17,23 @@ file_schema = FileSchema()
 user_schema = UserSchema()
 valid_token_seconds = 3600
 
+# Allowed audio formats
+ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma'}
+
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
 
 producer = KafkaProducer(
-    bootstrap_servers=['localhost:9092'],
+    bootstrap_servers=['kafka:9092'],
     api_version=(0,11,5),
     value_serializer=json_serializer)
 
 class TasksView(Resource):
+    
+    def delete(self):
+        session.query(File).delete()
+        session.query(User).delete()
+        return {'message': 'delete'}, 200
     
     @token_required
     def get(self):
@@ -47,11 +56,16 @@ class TasksView(Resource):
         f = request.files['fileName']
         newFormat = request.form['newFormat']
         
+        oldFormat = f.filename.rsplit('.', 1)[1].lower()
+        
+        if oldFormat not in ALLOWED_EXTENSIONS:
+            return {'message': 'File format not allowed, allowed formats: MP3, ACC, OGG, WAV, WMA'}, 400
+        
         token = request.headers.get('Authorization').split(' ')[1]
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
         
-        UPLOAD_FOLDER = f'../uploads'
+        UPLOAD_FOLDER = f'uploads'
         
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)
@@ -59,11 +73,11 @@ class TasksView(Resource):
         f.save(os.path.join(UPLOAD_FOLDER, secure_filename(f.filename)))
         
         user = session.query(User).filter_by(username=username).first()
-        file = File(fileName=f.filename, newFormat=newFormat, user=user.id)
+        file = File(fileName=f.filename, newFormat=newFormat, oldFormat=oldFormat, user=user.id)
         session.add(file)
         session.commit()
         
-        producer.send('convert_song', value={'fileName': f.filename, 'newFormat': newFormat, 'username': username, 'id': file.id})
+        producer.send('convert_song', value={'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat, 'username': username, 'id': file.id})
         
         return {'message': 'file uploaded successfully'}
     

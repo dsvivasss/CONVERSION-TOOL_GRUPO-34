@@ -1,8 +1,8 @@
 from mimetypes import init
-from api import create_app
+from . import create_app
 from .models import create_all
 from flask_restful import Api, Resource
-from .vistas import LoginView, SignUpView, TasksView, UniqueTaskView, ModifyFileView, FilesViewUpload, FilesViewConvert
+from .vistas import LoginView, SignUpView, TasksView, UniqueTaskView, FilesViewUpload, FilesViewConvert, ModifyFileView
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 

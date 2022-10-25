@@ -30,7 +30,7 @@ class File(Base):
     __tablename__ = 'files'
 
     id        = Column(Integer, primary_key=True)
-    fileName  = Column(String(128), nullable=False, unique=True)
+    fileName  = Column(String(128), nullable=False)
     newFormat = Column(String(128), nullable=False)
     oldFormat = Column(String(128))
     status    = Column(String(128), nullable=False, default='uploaded')

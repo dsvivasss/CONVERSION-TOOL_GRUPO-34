@@ -4,9 +4,9 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.ext.declarative import declarative_base
 
 postgresql = {
-    'pguser'  : 'postgres',
+    'pguser'  : 'root',
     'pgpasswd': 'admin',
-    'pghost'  : 'localhost',
+    'pghost'  : 'postgres',
     'pgport'  : '5432',
     'pgdb'    : 'tool-conversion',
 }
