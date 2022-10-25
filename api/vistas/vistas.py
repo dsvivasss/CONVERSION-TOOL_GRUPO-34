@@ -24,17 +24,12 @@ def json_serializer(data):
     return json.dumps(data).encode("utf-8")
 
 producer = KafkaProducer(
-    bootstrap_servers=['kafka:9092'],
+    bootstrap_servers=['kafka:29092'],
     api_version=(0,11,5),
     value_serializer=json_serializer)
 
 class TasksView(Resource):
-    
-    def delete(self):
-        session.query(File).delete()
-        session.query(User).delete()
-        return {'message': 'delete'}, 200
-    
+        
     @token_required
     def get(self):
         # get username from token
@@ -65,7 +60,7 @@ class TasksView(Resource):
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
         
-        UPLOAD_FOLDER = f'uploads'
+        UPLOAD_FOLDER = f'/python-docker/uploads'
         
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)

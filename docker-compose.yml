@@ -6,52 +6,71 @@ services:
       - 5001:5001
     stdin_open: true # Allows us to run the container in interactive mode
     volumes:
-      - ./uploads:/uploads
+      - ./uploads:/python-docker/uploads
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 50M
+          cpus: '2'
+          memory: 2G
         reservations:
-          cpus: '0.25'
-          memory: 20M
+          cpus: '2'
+          memory: 2G
     depends_on:
       - kafka
       - postgres
+    networks:
+      - broker-kafka
 
   k6:
     image: grafana/k6
     volumes:
-      - ./api/tests:/scripts
+      - ./tests:/scripts
     environment:
-      - K6_CLOUD_TOKEN=fb44f94bdce82a7ca7f65a5662eb7b10250fa789b57269a815afc6aa9b280603
+      - K6_CLOUD_TOKEN=d256a37fd84a464e8e8a87e92031bed882f08fb10ed6414a4f3c7473624eed38
+    networks:
+      - broker-kafka
 
   convert:
-    build: ./conversor
+    build:
+      context: ./convert
+      dockerfile: Dockerfile
+    networks:
+      - broker-kafka
     volumes:
-      - ../uploads:/uploads
+      - ./uploads:/convert/app/uploads
+      - ./process:/convert/app/process
     depends_on:
       - kafka
 
   zookeeper:
-    image: 'bitnami/zookeeper:latest'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+    image: confluentinc/cp-zookeeper:6.2.0
+    container_name: zookeeper
+    networks:
+      - broker-kafka
     ports:
-      - 2181:2181     
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
   kafka:
-    image: 'bitnami/kafka:latest'
-    ports:
-      - 9092:9092
-      - 29092:29092
-    environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    image: confluentinc/cp-kafka:6.2.0
+    container_name: kafka
+    networks:
+      - broker-kafka
     depends_on:
       - zookeeper
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ADVERTISED_HOST_NAME: kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
   postgres:
     image: postgres
     restart: always
@@ -62,6 +81,8 @@ services:
       - POSTGRES_DB=tool-conversion
     ports: 
       - 5432:5432
+    networks:
+      - broker-kafka
 
   pgadmin:
     image: dpage/pgadmin4
@@ -71,4 +92,10 @@ services:
     ports:
       - "80:80"
     depends_on: 
-      - postgres 
+      - postgres
+    networks:
+      - broker-kafka
+
+networks:
+  broker-kafka:
+    driver: bridge
