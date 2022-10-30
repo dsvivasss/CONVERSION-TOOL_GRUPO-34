@@ -3,12 +3,20 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.ext.declarative import declarative_base
 
+# postgresql = {
+#     'pguser'  : 'root',
+#     'pgpasswd': 'admin',
+#     'pghost'  : 'postgres',
+#     'pgport'  : '5432',
+#     'pgdb'    : 'tool-conversion',
+# }
+
 postgresql = {
-    'pguser'  : 'root',
-    'pgpasswd': 'admin',
-    'pghost'  : 'postgres',
+    'pguser'  : 'postgres',
+    'pgpasswd': 'nacional',
+    'pghost'  : '34.27.17.181',
     'pgport'  : '5432',
-    'pgdb'    : 'tool-conversion',
+    'pgdb'    : 'conversion-tool-db',
 }
 
 def get_engine(user, passwd, host, port, db):
