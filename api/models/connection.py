@@ -4,11 +4,11 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.ext.declarative import declarative_base
 
 postgresql = {
-    'pguser'  : 'root',
-    'pgpasswd': 'admin',
-    'pghost'  : 'postgres',
+    'pguser'  : 'postgres',
+    'pgpasswd': 'mateo',
+    'pghost'  : '34.27.114.233',
     'pgport'  : '5432',
-    'pgdb'    : 'tool-conversion',
+    'pgdb'    : 'g34instance',
 }
 
 def get_engine(user, passwd, host, port, db):
