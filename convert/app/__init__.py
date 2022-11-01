@@ -13,7 +13,8 @@ def main():
         # To consume latest messages and auto-commit offsets
         host = 'http://api:5001'
         consumer = KafkaConsumer('convert_song',auto_offset_reset='earliest',bootstrap_servers='kafka:29092')
-        print('Kafka Consumer has been initiated...')
+        print('Kafka Consumer has been initiated...')+
+        consumer.ge
         for msg in consumer:
             print('Start ...')
             file_data = json.loads(msg.value)

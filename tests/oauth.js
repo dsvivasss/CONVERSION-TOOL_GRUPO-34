@@ -1,10 +1,10 @@
 import http from 'k6/http';
 
 export function oauth () {
-    const urlToken = 'http://host.docker.internal:5001/api/auth/login'
+    const urlToken = 'http://34.136.168.9/api/auth/login'
 
     const data = {
-        username: 'miguel1',
+        username: 'daniel',
         password: 'nacional'
     }
 

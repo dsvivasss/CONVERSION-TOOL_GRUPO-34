@@ -4,23 +4,17 @@ import {
 } from './oauth.js';
 
 export const options = {
-    vus: 2, // Virtual Users
-    duration: '30s',
+    vus: 10, // Virtual Users
+    duration: '2m',
 }
 
 export function setup() {
-    return oauth('miguel1', 'nacional')
+    return '23'
 }
 
 const files = [
-    'audio.ogg', 
-    'audio16.mp3', 'audio22.mp3', 'audio29.mp3', 'audio8.ogg',
-    'audio10.ogg', 'audio17.mp3', 'audio23.wav', 'audio3.mp3', 'audio9.ogg',
-    'audio11.mp3', 'audio18.mp3', 'audio24.wav', 'audio30.mp3',
-    'audio12.mp3', 'audio19.mp3', 'audio25.wav', 'audio4.mp3',
-    'audio13.mp3', 'audio2.mp3', 'audio26.wav', 'audio5.wav',
-    'audio14.mp3', 'audio20.mp3', 'audio27.mp3', 'audio6.mp3',
-    'audio15.mp3', 'audio21.mp3', 'audio28.mp3', 'audio7.ogg'
+    'audio5.wav', 'audio23.wav', 'audio24.wav', 'audio25.wav',
+    'audio26.wav'
 ]
 const dir = {}
 files.forEach(elem => {
@@ -32,9 +26,12 @@ export default function (token) {
         newFormat: 'mp3',
         fileName: http.file(dir[randomName], randomName)
     };
-    http.post('http://host.docker.internal:5001/api/tasks', data, {
+    const res = http.post('http://34.136.168.9/api/tasks', data, {
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NjcyODEyNzIsImV4cCI6MTY2NzI4NDg3Miwic3ViIjoiZGFuaWVsIiwiaXNzIjoid3d3LnRlc3QuY29tIn0.l45c7e1OIeHPFRKS0JaCiHryvIkNXW8pu73dimCJhfU`
         }
     });
+    if(res.status != 200){
+        console.log(res.body)
+    }
 }
