@@ -4,16 +4,18 @@ import ffmpeg
 import requests
 from kafka import KafkaConsumer
 import pathlib
-
+import os
 
 
 def main():
     try:
         print(pathlib.Path(__file__).parent.resolve())
         # To consume latest messages and auto-commit offsets
-        host = 'http://api:5001'
+        host = 'http://34.136.168.9'
         consumer = KafkaConsumer('convert_song',auto_offset_reset='earliest',bootstrap_servers='kafka:29092')
         print('Kafka Consumer has been initiated...')
+        print(os.getcwd())
+        print(os.path.dirname(os.path.realpath(__file__)))
         for msg in consumer:
             print('Start ...')
             file_data = json.loads(msg.value)
@@ -26,4 +28,5 @@ def main():
             response = requests.put(url)
             print(f'Update status ok...{response.status_code}')
     except Exception as e:
+        print('ERROR', e)
         logging.info('Connection successful', e)
