@@ -1,17 +1,36 @@
-
-from ast import Delete
-from flask import request, send_file
-from kafka import KafkaProducer, KafkaConsumer
-import jwt
-from ..models import File, FileSchema, User, UserSchema, session
-from flask_restful import Resource
-from flask_jwt_extended import jwt_required, create_access_token
-from werkzeug.utils import secure_filename
 import datetime
-from ..decorators import token_required
-import os
-import urllib.parse
+import io
 import json
+import os
+from datetime import datetime
+
+import flask
+import jwt
+from flask import request, send_file
+from flask_jwt_extended import create_access_token, jwt_required
+from flask_restful import Resource
+from google.cloud import pubsub_v1, storage
+from werkzeug.utils import secure_filename
+
+from ..decorators import token_required
+from ..models import File, FileSchema, User, UserSchema, session
+
+project_id = os.environ['proyect-id']
+topic_id = os.environ['topic-id']
+upload_bucket_name= os.environ['upload-bucket-name']
+download_bucket_name= os.environ['download-bucket-name']
+
+# project_id = 'convertor-tool'
+# topic_id = 'convert_song'
+# upload_bucket_name= 'original-song'
+# download_bucket_name= 'convert-song'
+
+publisher = pubsub_v1.PublisherClient()
+topic_path = publisher.topic_path(project_id, topic_id)
+storage_client = storage.Client()
+
+upload_bucket = storage_client.bucket(upload_bucket_name)
+download_bucket = storage_client.bucket(download_bucket_name)
 
 file_schema = FileSchema()
 user_schema = UserSchema()
@@ -22,11 +41,6 @@ ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'w
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
-
-producer = KafkaProducer(
-    bootstrap_servers=['kafka:29092'],
-    api_version=(0,11,5),
-    value_serializer=json_serializer)
 
 class TasksView(Resource):
         
@@ -59,20 +73,18 @@ class TasksView(Resource):
         token = request.headers.get('Authorization').split(' ')[1]
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
-        
-        UPLOAD_FOLDER = f'/python-docker/uploads'
-        
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-        
-        f.save(os.path.join(UPLOAD_FOLDER, secure_filename(f.filename)))
+
+        blob = upload_bucket.blob(f.filename)
+        blob.upload_from_file(f)
         
         user = session.query(User).filter_by(username=username).first()
         file = File(fileName=f.filename, newFormat=newFormat, oldFormat=oldFormat, user=user.id)
         session.add(file)
         session.commit()
-        
-        producer.send('convert_song', value={'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat, 'username': username, 'id': file.id})
+
+        data = {'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat, 'username': username, 'id': file.id}
+        future = publisher.publish(topic_path, json_serializer(data))
+        print(future.result())
         
         return {'message': 'file uploaded successfully'}
     
@@ -137,11 +149,11 @@ class FilesViewUpload(Resource):
         if file is None:
             return {'message': 'File not found'}, 404
         
-        UPLOAD_FOLDER = f'../uploads'
-        
-        filenameEncoded = urllib.parse.quote(file.fileName.encode('utf8'))
-        
-        return send_file(os.path.join(UPLOAD_FOLDER, filenameEncoded)) #, as_attachment=True
+        blob = upload_bucket.get_blob(file.fileName)
+        bites = blob.download_as_string()
+        test = io.BytesIO(bites)
+        test.seek(0)
+        return send_file(test, mimetype=f'audio/{file.oldFormat}', as_attachment=True, download_name=f'{file.fileName}')
 class FilesViewConvert(Resource):
     
     @token_required
@@ -149,14 +161,15 @@ class FilesViewConvert(Resource):
         file = session.query(File).get(id)
         if file is None:
             return {'message': 'File not found'}, 404
-        PROCESS_FOLDER = f'../process'
-
+        
         name = file.fileName.split('.')
-        newName= name[0] + '.'+ file.newFormat
-        
-        filenameEncoded = urllib.parse.quote(newName.encode('utf8'))
-        
-        return send_file(os.path.join(PROCESS_FOLDER, filenameEncoded)) #, as_attachment=True
+        new_name= name[0] + '.'+ file.newFormat
+
+        blob = download_bucket.get_blob(new_name)
+        bites = blob.download_as_string()
+        test = io.BytesIO(bites)
+        test.seek(0)
+        return send_file(test, mimetype=f'audio/{file.oldFormat}', as_attachment=True, download_name=f'{new_name}')
 
 class LoginView(Resource):
     

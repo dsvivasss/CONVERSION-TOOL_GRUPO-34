@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  selector:
+    matchLabels:
+      role: api
+  template:
+    metadata:
+      labels:
+        role: api
+    spec:
+      serviceAccountName: convert-ksa
+      containers:
+      - name: api
+        image: us-east4-docker.pkg.dev/convertor-tool/convert-repo/convert-api:v2
+        env:
+          - name: proyect-id
+            value: convertor-tool
+          - name: topic-id
+            value: convert_song
+          - name: upload-bucket-name
+            value: original-song
+          - name: download-bucket-name
+            value: convert-song
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        ports:
+        - containerPort: 5001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  selector:
+    role: api
+  ports:
+  - port: 5001
+    targetPort: 5001
+
