@@ -4,8 +4,8 @@ import {
 } from './oauth.js';
 
 export const options = {
-    vus: 10, // Virtual Users
-    duration: '2m',
+    vus: 5, // Virtual Users
+    duration: '1m',
 }
 
 export function setup() {
@@ -13,8 +13,8 @@ export function setup() {
 }
 
 const files = [
-    'audio5.wav', 'audio23.wav', 'audio24.wav', 'audio25.wav',
-    'audio26.wav'
+    'audio5.mp3', 'audio23.mp3', 'audio24.mp3', 'audio25.mp3',
+    'audio26.mp3'
 ]
 const dir = {}
 files.forEach(elem => {
@@ -26,9 +26,9 @@ export default function (token) {
         newFormat: 'mp3',
         fileName: http.file(dir[randomName], randomName)
     };
-    const res = http.post('http://34.136.168.9/api/tasks', data, {
+    const res = http.post('http://34.150.214.140:5001/api/tasks', data, {
         headers: {
-            'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NjcyODEyNzIsImV4cCI6MTY2NzI4NDg3Miwic3ViIjoiZGFuaWVsIiwiaXNzIjoid3d3LnRlc3QuY29tIn0.l45c7e1OIeHPFRKS0JaCiHryvIkNXW8pu73dimCJhfU`
+            'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2Njg0OTQyMzQsImV4cCI6MTY2ODQ5NzgzNCwic3ViIjoiaXNtYWVsIiwiaXNzIjoid3d3LnRlc3QuY29tIn0.84CjFDlHQ06w6KFg99oUQ_zV5c4lVg4YzA-vyxZDVlY`
         }
     });
     if(res.status != 200){

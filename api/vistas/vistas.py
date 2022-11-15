@@ -2,7 +2,6 @@ import datetime
 import io
 import json
 import os
-from datetime import datetime
 
 import flask
 import jwt
@@ -13,10 +12,11 @@ from google.cloud import pubsub_v1, storage
 from werkzeug.utils import secure_filename
 
 from ..decorators import token_required
-from ..models import File, FileSchema, User, UserSchema, session
+from ..models import File, FileSchema, User, UserSchema, session, get_session
 
 project_id = os.environ['proyect-id']
-topic_id = os.environ['topic-id']
+file_topic = os.environ['file-topic']
+email_topic = os.environ['email-topic']
 upload_bucket_name= os.environ['upload-bucket-name']
 download_bucket_name= os.environ['download-bucket-name']
 
@@ -26,7 +26,8 @@ download_bucket_name= os.environ['download-bucket-name']
 # download_bucket_name= 'convert-song'
 
 publisher = pubsub_v1.PublisherClient()
-topic_path = publisher.topic_path(project_id, topic_id)
+topic_path = publisher.topic_path(project_id, file_topic)
+email_topic = publisher.topic_path(project_id, email_topic)
 storage_client = storage.Client()
 
 upload_bucket = storage_client.bucket(upload_bucket_name)
@@ -62,6 +63,7 @@ class TasksView(Resource):
     
     @token_required
     def post(self):
+        sub_session = get_session()
         f = request.files['fileName']
         newFormat = request.form['newFormat']
         
@@ -74,18 +76,20 @@ class TasksView(Resource):
         decoded_token = jwt.decode(token, "secret", algorithms=["HS256"])
         username = decoded_token['sub']
 
-        blob = upload_bucket.blob(f.filename)
+        now = datetime.datetime.now()
+        timestamp = datetime.datetime.timestamp(now)
+        blob = upload_bucket.blob(f'{timestamp}_{f.filename}')
         blob.upload_from_file(f)
         
         user = session.query(User).filter_by(username=username).first()
         file = File(fileName=f.filename, newFormat=newFormat, oldFormat=oldFormat, user=user.id)
-        session.add(file)
-        session.commit()
+        sub_session.add(file)
+        sub_session.commit()
 
         data = {'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat, 'username': username, 'id': file.id}
         future = publisher.publish(topic_path, json_serializer(data))
         print(future.result())
-        
+        sub_session.close()
         return {'message': 'file uploaded successfully'}
     
 class UniqueTaskView(Resource):
@@ -109,6 +113,9 @@ class UniqueTaskView(Resource):
         
         session.commit()
         
+        data = {'fileName': file.filename, 'email': file.user.email}
+        future = publisher.publish(file_topic, json_serializer(data))
+        print(future.result())
         return file_schema.dump(file), 200
     
     @token_required
