@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.declarative import declarative_base
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from .connection import session, get_engine_from_settings
+from .connection import session, get_engine, get_session
 import datetime
 
 
@@ -48,6 +48,6 @@ class FileSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
 class create_all():
-    engine = get_engine_from_settings()
+    engine = get_engine()
     # Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)

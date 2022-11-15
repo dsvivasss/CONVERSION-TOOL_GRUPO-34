@@ -1,34 +1,44 @@
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_utils import database_exists, create_database
-from sqlalchemy.ext.declarative import declarative_base
+from google.cloud.sql.connector import Connector, IPTypes
+import pg8000
+import sqlalchemy
+import os
 
-postgresql = {
-    'pguser'  : 'root',
-    'pgpasswd': 'admin',
-    'pghost'  : 'postgres',
-    'pgport'  : '5432',
-    'pgdb'    : 'tool-conversion',
-}
+connector = Connector()
 
-def get_engine(user, passwd, host, port, db):
-    url = f"postgresql://{user}:{passwd}@{host}:{port}/{db}"
-    if not database_exists(url):
-        create_database(url)
+project_id = os.environ['proyect-id']
+zone = os.environ['zone']
+instance_name = os.environ['instance_name']
+db_user=os.environ['db_user']
+db_password=os.environ['db_password']
+db_name= os.environ['db_name']
 
-    engine = create_engine(url)
-    return engine
 
-def get_engine_from_settings():
-    keys = ['pguser', 'pgpasswd', 'pghost', 'pgport', 'pgdb']
-    if not all(key in keys for key in postgresql.keys()):
-        raise Exception('Bad config file')
+def getconn() -> pg8000.dbapi.Connection:
+    conn: pg8000.dbapi.Connection = connector.connect(
+        f"{project_id}:{zone}:{instance_name}",  # Cloud SQL Instance Connection Name
+        "pg8000",
+        user=db_user,
+        password=db_password,
+        db=db_name
+    )
+    return conn
 
-    return get_engine(postgresql['pguser'], postgresql['pgpasswd'], postgresql['pghost'], postgresql['pgport'], postgresql['pgdb'])
+
+def get_engine():
+    pool = sqlalchemy.create_engine(
+        "postgresql+pg8000://",
+        creator=getconn,
+        pool_size = 300,
+        pool_timeout= 1
+    )
+    return pool
+
 
 def get_session():
-    engine  = get_engine_from_settings()
+    engine = get_engine()
     session = sessionmaker(bind=engine)()
     return session
+
 
 session = get_session()
