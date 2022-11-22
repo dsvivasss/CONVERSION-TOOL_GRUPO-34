@@ -27,7 +27,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # RUN pip install --no-cache-dir --user -r /req.txt
 
 # Copy source code
-COPY ./app ./app
+COPY . .
 
 # Run the application
 CMD ["python", "-m", "app"]

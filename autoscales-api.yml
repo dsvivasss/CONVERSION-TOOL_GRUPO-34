@@ -1,0 +1,15 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-memory
+  namespace: dev-uniandes
+spec:
+  behavior:
+  scaleDown:
+    policies:
+    - type: Pods
+      value: 4
+      periodSeconds: 20
+    - type: Percent
+      value: 10
+      periodSeconds: 60

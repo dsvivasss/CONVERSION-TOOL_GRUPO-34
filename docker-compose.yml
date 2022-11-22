@@ -4,9 +4,6 @@ services:
     build: ./api
     ports:
       - 5001:5001
-    stdin_open: true # Allows us to run the container in interactive mode
-    volumes:
-      - ./uploads:/python-docker/uploads
     deploy:
       resources:
         limits:
@@ -15,9 +12,17 @@ services:
         reservations:
           cpus: '2'
           memory: 2G
-    depends_on:
-      - kafka
-      - postgres
+    environment:
+      - proyect-id=convertor-tool
+      - file-topic=file_topic
+      - email-topic=email_topic
+      - upload-bucket-name=original-song
+      - download-bucket-name=convert-song
+      - zone=us-east4
+      - instance_name=tool-conversioncls
+      - db_user=postgres
+      - db_password=root
+      - db_name=tool-conversion-3
     networks:
       - broker-kafka
 
