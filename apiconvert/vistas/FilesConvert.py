@@ -29,8 +29,12 @@ class FilesConvertView(Resource):
         name = file.fileName.split('.')
         new_name= name[0] + '.'+ file.newFormat
 
-        blob = download_bucket.get_blob(new_name)
+        timestamp = file.pathName.split('_')[0]
+        new_name= name[0] + '.'+ file.newFormat
+        new_path = f'{timestamp}_{new_name}'
+
+        blob = download_bucket.get_blob(new_path)
         bites = blob.download_as_string()
         test = io.BytesIO(bites)
         test.seek(0)
-        return send_file(test, mimetype=f'audio/{file.oldFormat}', as_attachment=True, download_name=f'{new_name}')
+        return send_file(test, mimetype=f'audio/{file.newFormat}', as_attachment=True, download_name=f'{new_name}')

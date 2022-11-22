@@ -1,35 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: convert-batch
+  name: batch-convert
 spec:
   selector:
     matchLabels:
-      role: convert-batch
+      role: batch-convert
   template:
     metadata:
       labels:
-        role: convert-batch
+        role: batch-convert
     spec:
-      serviceAccountName: convert-ksa
+      serviceAccountName: ksa-convert-api
       containers:
-      - name: convert-batch
-        image: us-east4-docker.pkg.dev/convertor-tool/convert-repo/convert-batch:v2
+      - name: batch-convert
+        image: gcr.io/conversiontoolg34/batch-convert:v1.7
         env:
           - name: api-host
-            value: 'http://api:5001/'
-          - name: proyect-id
-            value: convertor-tool
-          - name: subscription-id
-            value: convert_song_sub
+            value: 'http://35.245.192.250:5001'
+          - name: project-id
+            value: conversiontoolg34
+          - name: file-sub-name
+            value: file-topic-sub
           - name: upload-bucket-name
-            value: original-song
+            value: original-song-v1
           - name: download-bucket-name
-            value: convert-song
+            value: convert-song-v1
         resources:
           requests:
-            memory: "128Mi"
+            memory: "1024Mi"
             cpu: "100m"
           limits:
-            memory: "128Mi"
+            memory: "1024Mi"
             cpu: "500m"

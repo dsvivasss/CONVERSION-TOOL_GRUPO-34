@@ -25,8 +25,8 @@ class FilesUploadView(Resource):
         file = crud.get_file_id(db, id)
         if file is None:
             return {'message': 'File not found'}, 404
-        
-        blob = upload_bucket.get_blob(file.fileName)
+        print(file)
+        blob = upload_bucket.get_blob(file.pathName)
         bites = blob.download_as_string()
         test = io.BytesIO(bites)
         test.seek(0)

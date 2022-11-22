@@ -17,18 +17,18 @@ spec:
         iam.gke.io/gke-metadata-server-enabled: "true"
       containers:
       - name: api
-        image: us-east4-docker.pkg.dev/convertor-tool/convert-repo/convert-api:v4.8
+        image: gcr.io/conversiontoolg34/apiconvert:v1.8
         env:
           - name: proyect-id
-            value: convertor-tool
+            value: conversiontoolg34
           - name: file-topic
-            value: file_topic
+            value: file-topic
           - name: email-topic
-            value: email_topic
+            value: email-topic
           - name: upload-bucket-name
-            value: original-song
+            value: original-song-v1
           - name: download-bucket-name
-            value: convert-song
+            value: convert-song-v1
           - name: zone
             value: us-east4
           - name: instance_name
@@ -38,14 +38,14 @@ spec:
           - name: db_password
             value: root
           - name: db_name
-            value: tool-conversion-3
+            value: tool-conversion-v1
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "2048Mi"
+            cpu: "300m"
           limits:
-            memory: "128Mi"
-            cpu: "100m"
+            memory: "2048Mi"
+            cpu: "500m"
         ports:
         - containerPort: 5001
 ---

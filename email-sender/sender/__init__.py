@@ -1,4 +1,5 @@
 import os
+import json
 from google.appengine.api import app_identity
 from google.appengine.api import mail
 from google.cloud import pubsub_v1
@@ -12,10 +13,11 @@ timeout = 60
 sender = '{}@appspot.gserviceaccount.com'.format(app_identity.get_application_id())
 
 def send_approved_mail(message: pubsub_v1.subscriber.message.Message) -> None:
+    email_data = json.loads(message.data)
     mail.send_mail(sender=sender,
-                   to="Albert Johnson <Albert.Johnson@example.com>",
-                   subject="Your account has been approved",
-                   body="""Your file is ready""")
+                   to=email_data.get('email'),
+                   subject="File convert Ready",
+                   body="Your file is ready to download")
 
                    
 

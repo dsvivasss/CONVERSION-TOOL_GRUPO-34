@@ -5,12 +5,13 @@ if project_id is None:
     download_bucket_name='convert-song-v1'
     upload_bucket_name='original-song-v1'
     project_id='conversiontoolg34'
-    file_topic_name='file_topic'
+    file_topic_name='file-topic'
+    email_topic_name='email-topic'
     zone='us-east4'
     instance_name='tool-conversion'
     db_user='postgres'
     db_password='root'
-    db_name='tool-conversion'
+    db_name='tool-conversion-v1'
 else:
     file_topic = os.getenv('file-topic', None)
     upload_bucket_name= os.getenv('upload-bucket-name', None)

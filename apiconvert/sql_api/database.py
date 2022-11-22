@@ -23,7 +23,8 @@ engine = sqlalchemy.create_engine(
         "check_same_thread": False,
         "connect_timeout": 60},
     creator=getconn,
-    pool_size=20
+    pool_size=50,
+    max_overflow=-1
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

@@ -7,9 +7,10 @@ def token_required(func):
             
             token = request.headers.get('Authorization').split(' ')[1]
             
-            jwt.decode(token, "secret", algorithms=["HS256"])
+            jwt.decode(token, options={'verify_signature': False, 'verify_aud': False, 'verify_nbf': False}, algorithms=["HS256"])
             
-        except:
+        except e:
+            print(e)
             response = {
                 'valid_token': False
             }

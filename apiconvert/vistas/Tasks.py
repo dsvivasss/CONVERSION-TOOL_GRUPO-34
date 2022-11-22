@@ -12,7 +12,7 @@ from environments import project_id, file_topic_name, upload_bucket_name
 
 storage_client = storage.Client()
 publisher = pubsub_v1.PublisherClient()
-file_topic_name = publisher.topic_path(project_id, file_topic_name)
+file_topic = publisher.topic_path(project_id, file_topic_name)
 upload_bucket = storage_client.bucket(upload_bucket_name)
 ALLOWED_EXTENSIONS = {'MP3', 'ACC', 'OGG', 'WAV', 'WMA', 'mp3', 'acc', 'ogg', 'wav', 'wma'}
 
@@ -43,6 +43,7 @@ class TasksView(Resource):
         return files, 200
         #return file_schema.dump(files, many=True), 200
     
+    @token_required
     def post(self):
         db = next(get_db())
         f = request.files['fileName']
@@ -56,6 +57,7 @@ class TasksView(Resource):
         token = request.headers.get('Authorization').split(' ')[1]
         decoded_token = jwt.decode(token, options={'verify_signature': False, 'verify_aud': False, 'verify_nbf': False}, algorithms=["HS256"])
         username = decoded_token['sub']
+        print()
 
         now = datetime.datetime.now()
         timestamp = datetime.datetime.timestamp(now)
@@ -68,6 +70,6 @@ class TasksView(Resource):
         file = crud.create_file(db,file)
 
         data = {'fileName': f.filename, 'newFormat': newFormat, 'oldFormat': oldFormat, 'username': username, 'id': file.id, 'pathName': path_name}
-        publisher.publish(file_topic_name, json.dumps(data).encode("utf-8"))
+        publisher.publish(file_topic, json.dumps(data).encode("utf-8"))
 
         return {'message': 'file uploaded successfully'}

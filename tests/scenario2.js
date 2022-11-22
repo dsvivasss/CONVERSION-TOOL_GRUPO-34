@@ -4,29 +4,28 @@ import {
 } from './oauth.js';
 
 export const options = {
-    vus: 1, // Virtual Users
-    duration: '10s',
+    vus: 10, // Virtual Users
+    duration: '1m',
 }
 
 export function setup() {
-    return oauth('daniel', 'nacional')
+    return '23'
 }
 
 
 // Open a file to upload
-const file = open(`/scripts/audios/audio25.wav`, 'b'); // 5MB file
+const file = open(`/scripts/audios/audio25.mp3`, 'b'); // 5MB file
 
-export default function (token) {
+export default function () {
 
     const data = {
-        newFormat: 'mp3',
-        fileName: http.file(file, 'audio25.wav'),
+        newFormat: 'ogg',
+        fileName: http.file(file, 'audio25.mp3'),
     };
 
-    const test = http.post('http://34.136.168.9/api/tasks', data, {
+    const test = http.post('http://35.245.192.250:5001/api/tasks', data, {
         headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjkwOTgxMzQsImV4cCI6MTY2OTEwMTczNCwic3ViIjoiaXNtYWVsMiIsImlzcyI6Ind3dy50ZXN0LmNvbSJ9.0-PuJXVZT9pyvp08fq14qroIyRdLYH046Z_LU7NJ47s`
         }
     });
-    console.log(test)
 }
