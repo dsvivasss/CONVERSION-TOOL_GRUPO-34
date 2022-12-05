@@ -1,30 +1,25 @@
 version: '2'
 services:
   api:
-    build: ./api
+    image: gcr.io/api-project-759687602744/convert-api:v1
     ports:
-      - 5001:5001
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '2'
-          memory: 2G
+      - 5000:5000
+    volumes:
+      - C:\Users\miguel\AppData\Roaming\gcloud:/gcp/config
     environment:
-      - proyect-id=convertor-tool
-      - file-topic=file_topic
-      - email-topic=email_topic
-      - upload-bucket-name=original-song
-      - download-bucket-name=convert-song
+      - CLOUDSDK_CONFIG=/gcp/config
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcp/config/application_default_credentials.json
+      - download_bucket_name=convert-song-v1
+      - upload_bucket_name=original-song-v1
+      - project_id=api-project-759687602744
+      - GCLOUD_PROJECT=api-project-759687602744
+      - file_topic_name=file-topic
+      - email_topic_name=email-topic
       - zone=us-east4
-      - instance_name=tool-conversioncls
+      - instance_name=convert-tool-v2
       - db_user=postgres
       - db_password=root
-      - db_name=tool-conversion-3
-    networks:
-      - broker-kafka
+      - db_name=tool-conversion-v1
 
   k6:
     image: grafana/k6
@@ -36,16 +31,18 @@ services:
       - broker-kafka
 
   convert:
-    build:
-      context: ./convert
-      dockerfile: Dockerfile
-    networks:
-      - broker-kafka
+    image: gcr.io/api-project-759687602744/convert-batch:v1.3
     volumes:
-      - ./uploads:/convert/app/uploads
-      - ./process:/convert/app/process
-    depends_on:
-      - kafka
+      - C:\Users\miguel\AppData\Roaming\gcloud:/gcp/config
+    environment:
+      - CLOUDSDK_CONFIG=/gcp/config
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcp/config/application_default_credentials.json
+      - GCLOUD_PROJECT=api-project-759687602744
+      - download_bucket_name=convert-song-v1
+      - upload_bucket_name=original-song-v1
+      - project_id=api-project-759687602744
+      - api_host=https://api-project-759687602744.uk.r.appspot.com
+      - file_sub_name=file-topic-sub
 
   zookeeper:
     image: confluentinc/cp-zookeeper:6.2.0

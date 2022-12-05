@@ -1,12 +1,23 @@
-# syntax=docker/dockerfile:1
+FROM gcr.io/google-appengine/python
 
-FROM python:3.8-slim-buster
+# Create a virtualenv for dependencies. This isolates these packages from
+# system-level packages.
+# Use -p python3 or -p python3.7 to select python version. Default is version 2.
+RUN virtualenv /env
 
-WORKDIR /python-docker
+# Setting these environment variables are the same as running
+# source /env/bin/activate.
+ENV VIRTUAL_ENV /env
+ENV PATH /env/bin:$PATH
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+# Copy the application's requirements.txt and run pip to install all
+# dependencies into the virtualenv.
+ADD requirements.txt /app/requirements.txt
+RUN pip3 install -r /app/requirements.txt
 
-COPY . .
+# Add the application source code. m
+ADD . /app
 
-CMD [ "python", "-m" , "flask", "run", "--host=0.0.0.0", "--port=5001"]
+# Run a WSGI server to serve the application. gunicorn must be declared as
+# a dependency in requirements.txt.
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=8080"]
