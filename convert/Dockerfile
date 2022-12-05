@@ -1,33 +1,27 @@
-# Set python version
-ARG BASE_CONTAINER=python:3.8
-
-# Set the base image 
-FROM --platform=linux/amd64 $BASE_CONTAINER
-
-# Adds metadata to image.
-LABEL maintainer="Fernando"
-
-# dont write pyc files
-ENV PYTHONDONTWRITEBYTECODE 1
-# dont buffer to stdout/stderr
-ENV PYTHONUNBUFFERED 1
+FROM gcr.io/google-appengine/python
 
 # Sets the user name to use when running the image.
 USER root
 RUN apt update
-
 RUN apt install -y ffmpeg
 
-# Make a directory for app
-WORKDIR /convert
+# Create a virtualenv for dependencies. This isolates these packages from
+# system-level packages.
+# Use -p python3 or -p python3.7 to select python version. Default is version 2.
+RUN virtualenv /env
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
-# RUN pip install --no-cache-dir --user -r /req.txt
+# Setting these environment variables are the same as running
+# source /env/bin/activate.
+ENV VIRTUAL_ENV /env
+ENV PATH /env/bin:$PATH
+
+# Copy the application's requirements.txt and run pip to install all
+# dependencies into the virtualenv.
+ADD requirements.txt /app/requirements.txt
+RUN pip3 install -r /app/requirements.txt
 
 # Copy source code
 COPY . .
 
 # Run the application
-CMD ["python", "-m", "app"]
+CMD ["python3", "app.py"]

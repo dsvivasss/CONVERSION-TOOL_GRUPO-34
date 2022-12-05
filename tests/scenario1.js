@@ -29,9 +29,9 @@ export default function (token) {
         newFormat: 'mp3',
         fileName: http.file(dir[randomName], randomName)
     };
-    const res = http.post('http://35.245.192.250:5001/api/tasks', data, {
+    const res = http.post('https://convert-api-dot-api-project-759687602744.uk.r.appspot.com/api/tasks', data, {
         headers: {
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjkwOTcxNDYsImV4cCI6MTY2OTEwMDc0Niwic3ViIjoiaXNtYWVsMiIsImlzcyI6Ind3dy50ZXN0LmNvbSJ9.tE5mz9x_lp9R9WsVLVIkI_Cj57ryu_WhC58xzk1OO3A`
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NzAyMDc5ODcsImV4cCI6MTY3MDIxMTU4Nywic3ViIjoibWlndWVsIiwiaXNzIjoid3d3LnRlc3QuY29tIn0.sLWR7cEbDsYCcYTdbJ9ImGAI8zcfe-PyuUtl3mdXT2s`
         }
     });
     if(res.status != 200){

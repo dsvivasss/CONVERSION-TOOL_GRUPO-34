@@ -1,0 +1,20 @@
+service: convert-batch
+runtime: python
+env: flex
+service_account: api-project-759687602744@appspot.gserviceaccount.com
+env_variables:
+  download_bucket_name: convert-song-v1
+  upload_bucket_name: original-song-v1
+  project_id: api-project-759687602744
+  api_host: https://convert-api-dot-api-project-759687602744.uk.r.appspot.com
+  file_sub_name: file-topic-sub
+automatic_scaling:
+  max_num_instances: 3
+  min_num_instances: 1
+  cpu_utilization:
+    target_utilization: 0.5
+resources:
+  cpu: 1
+  memory_gb: 1
+runtime_config:
+  python_version: 3

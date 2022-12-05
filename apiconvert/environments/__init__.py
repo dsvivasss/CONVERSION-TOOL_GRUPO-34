@@ -4,11 +4,11 @@ project_id = os.getenv('project-id', None)
 if project_id is None:
     download_bucket_name='convert-song-v1'
     upload_bucket_name='original-song-v1'
-    project_id='conversiontoolg34'
+    project_id='api-project-759687602744'
     file_topic_name='file-topic'
     email_topic_name='email-topic'
     zone='us-east4'
-    instance_name='tool-conversion'
+    instance_name='convert-tool-v2'
     db_user='postgres'
     db_password='root'
     db_name='tool-conversion-v1'

@@ -23,6 +23,7 @@ gcloud pubsub subscriptions create email-topic-sub --topic=email-topic --ack-dea
 gcloud pubsub topics create file-topic
 gcloud pubsub subscriptions create file-topic-sub --topic=file-topic --ack-deadline=120
 ```
+
 # Create GCP Instance
 Create cluste with autoscaling config
 ```
@@ -35,17 +36,16 @@ kubectl config set-context --current --namespace=dev-uniandes
 ```
 ## Create service account 
 ```
-kubectl apply -f service-account.yml
+kubectl create serviceaccount ksa-convert-api --namespace dev-uniandes
 ```
 ### Binding KSA with GSA
 In this step is necessary to bind the kubernetes service account with the google service accont 
 ```
-gcloud iam service-accounts add-iam-policy-binding conversiontoolgrupo34@conversiontoolg34.iam.gserviceaccount.com --role="roles/iam.workloadIdentityUser" --member="serviceAccount:conversiontoolg34.svc.id.goog[dev-uniandes/ksa-convert-api]"
+gcloud iam service-accounts add-iam-policy-binding gsa-convert-api@convertor-tool.iam.gserviceaccount.com --role="roles/iam.workloadIdentityUser" --member="serviceAccount:convertor-tool.svc.id.goog[dev-uniandes/ksa-convert-api]"
 ```
 ```
-kubectl annotate serviceaccount ksa-convert-api iam.gke.io/gcp-service-account=conversiontoolgrupo34@conversiontoolg34.iam.gserviceaccount.com
+kubectl annotate serviceaccount ksa-convert-api --namespace dev-uniandes iam.gke.io/gcp-service-account=gsa-convert-api@convertor-tool.iam.gserviceaccount.com
 ```
-
 # Build Docker images
 ## GCP artifactory
 ### Create artifactory
@@ -83,19 +83,23 @@ When the build finish run
 ```
 docker push us-west2-docker.pkg.dev/conversiontoolgrupo34/convert-repo/email-sender:v1
 ```
-
-
-
-
-kubectl create namespace dev-uniandes
-
-gcloud container node-pools create convert-nodepool --cluster=convet-cluster-admin --workload-metadata=GKE_METADATA
-
-kubectl create serviceaccount ksa-convert-api --namespace dev-uniandes
-
-gcloud iam service-accounts add-iam-policy-binding gsa-convert-api@convertor-tool.iam.gserviceaccount.com --role="roles/iam.workloadIdentityUser" --member="serviceAccount:convertor-tool.svc.id.goog[dev-uniandes/ksa-convert-api]"
-
-kubectl annotate serviceaccount ksa-convert-api --namespace dev-uniandes iam.gke.io/gcp-service-account=gsa-convert-api@convertor-tool.iam.gserviceaccount.com
-
-
+# Enable aut-scaling 
+```
 kubectl autoscale deployment api --cpu-percent=50 --min=1 --max=3 --namespace dev-uniandes
+```
+# Deploy with App engine
+## Build and push images
+```
+docker build -t gcr.io/api-project-759687602744/convert-batch:v1 .
+docker push gcr.io/api-project-759687602744/convert-batch:v1
+```
+# Deploy apps with the docker images
+```
+gcloud app deploy --image-url gcr.io/api-project-759687602744/convert-api:v1.1
+gcloud app deploy --image-url gcr.io/api-project-759687602744/convert-batch:v1
+``` 
+# Get logs 
+```
+gcloud app logs tail --service=convert-batch
+gcloud app logs tail --service=convert-api
+```
